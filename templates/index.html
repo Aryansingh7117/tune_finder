@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tune Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f7f5f2;
+      --surface: #ffffff;
+      --border: #e8e4de;
+      --text: #1a1814;
+      --muted: #9a9590;
+      --accent: #2d6a4f;
+      --accent-light: #e8f4ee;
+      --danger: #c0392b;
+      --radius: 12px;
+      --shadow: 0 2px 20px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 3.5rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    header h1 span {
+      color: var(--accent);
+    }
+
+    header p {
+      margin-top: 0.6rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 300;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-top: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 0.75rem 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--text);
+    }
+
+    /* ── Panels ── */
+    .panel {
+      display: none;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .panel.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      margin-top: 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ── Inputs ── */
+    .input-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    /* ── Range sliders ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-item label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .feature-item label span.val {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    /* Special: loudness and tempo have different ranges */
+    .feature-hint {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ── Button ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: #235c40; }
+    .btn:active { transform: scale(0.98); }
+
+    .btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    /* ── Results ── */
+    .results {
+      margin-top: 1.5rem;
+    }
+
+    .results-header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .results-header h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    .results-header .input-tag {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .song-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.6rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.25s ease both;
+      transition: border-color 0.2s;
+    }
+
+    .song-card:hover { border-color: var(--accent); }
+
+    .song-card:nth-child(1) { animation-delay: 0.05s; }
+    .song-card:nth-child(2) { animation-delay: 0.1s; }
+    .song-card:nth-child(3) { animation-delay: 0.15s; }
+    .song-card:nth-child(4) { animation-delay: 0.2s; }
+    .song-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .song-info { flex: 1; min-width: 0; }
+
+    .song-name {
+      font-weight: 500;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .song-score {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+      margin-left: 1rem;
+      flex-shrink: 0;
+    }
+
+    .score-bar-wrap {
+      width: 60px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .score-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    .score-val {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* ── Error ── */
+    .error-msg {
+      background: #fdf0ef;
+      border: 1px solid #f5c6c2;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.88rem;
+      color: var(--danger);
+      margin-top: 1rem;
+    }
+
+    /* ── Loader ── */
+    .loader {
+      display: flex;
+      gap: 5px;
+      margin-top: 1.5rem;
+      justify-content: center;
+    }
+
+    .loader span {
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: bounce 0.8s infinite ease-in-out both;
+    }
+
+    .loader span:nth-child(2) { animation-delay: 0.16s; }
+    .loader span:nth-child(3) { animation-delay: 0.32s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40%           { transform: scale(1);   opacity: 1; }
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── Footer ── */
+    footer {
+      max-width: 680px;
+      margin: 3rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Tune<span>Finder</span></h1>
+    <p>Discover songs that match your vibe — by name or by sound.</p>
+  </header>
+
+  <main>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('name', this)">Search by Song</button>
+      <button class="tab-btn" onclick="switchTab('features', this)">Search by Vibe</button>
+    </div>
+
+    <!-- Panel: Search by Name -->
+    <div id="panel-name" class="panel active">
+      <div class="card">
+        <label>Song name or artist</label>
+        <div class="input-row">
+          <input type="text" id="song-input" placeholder="e.g. Shape of You, Blinding Lights…" />
+          <button class="btn" id="btn-name" onclick="searchByName()">
+            Find
+          </button>
+        </div>
+      </div>
+      <div id="results-name" class="results hidden"></div>
+    </div>
+
+    <!-- Panel: Search by Features -->
+    <div id="panel-features" class="panel">
+      <div class="card">
+        <div class="features-grid">
+
+          <div class="feature-item">
+            <label>Danceability <span class="val" id="val-danceability">0.50</span></label>
+            <input type="range" min="0" max="1" step="0.01" value="0.50"
+              oninput="updateVal('danceability', this.value)" />
+            <div class="feature-hint">0 = least danceable, 1 = most</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Energy <span class="val" id="val-energy">0.50</span></label>
+            <input type="range" min="0" max="1" step="0.01" value="0.50"
+              oninput="updateVal('energy', this.value)" />
+            <div class="feature-hint">0 = calm, 1 = intense</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Valence <span class="val" id="val-valence">0.50</span></label>
+            <input type="range" min="0" max="1" step="0.01" value="0.50"
+              oninput="updateVal('valence', this.value)" />
+            <div class="feature-hint">0 = sad/dark, 1 = happy/upbeat</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Acousticness <span class="val" id="val-acousticness">0.50</span></label>
+            <input type="range" min="0" max="1" step="0.01" value="0.50"
+              oninput="updateVal('acousticness', this.value)" />
+            <div class="feature-hint">0 = electric, 1 = acoustic</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Speechiness <span class="val" id="val-speechiness">0.05</span></label>
+            <input type="range" min="0" max="1" step="0.01" value="0.05"
+              oninput="updateVal('speechiness', this.value)" />
+            <div class="feature-hint">higher = more spoken words</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Instrumentalness <span class="val" id="val-instrumentalness">0.00</span></label>
+            <input type="range" min="0" max="1" step="0.01" value="0.00"
+              oninput="updateVal('instrumentalness', this.value)" />
+            <div class="feature-hint">higher = more instrumental</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Tempo <span class="val" id="val-tempo">120</span> bpm</label>
+            <input type="range" min="50" max="220" step="1" value="120"
+              oninput="updateVal('tempo', this.value)" />
+            <div class="feature-hint">beats per minute</div>
+          </div>
+
+          <div class="feature-item">
+            <label>Loudness <span class="val" id="val-loudness">-7</span> dB</label>
+            <input type="range" min="-40" max="0" step="0.5" value="-7"
+              oninput="updateVal('loudness', this.value)" />
+            <div class="feature-hint">-40 = quiet, 0 = loud</div>
+          </div>
+
+        </div>
+
+        <button class="btn" id="btn-features" onclick="searchByFeatures()">
+          Find by Vibe
+        </button>
+      </div>
+      <div id="results-features" class="results hidden"></div>
+    </div>
+
+  </main>
+
+  <footer>
+    Built with KNN · Content-Based Filtering · 1000 songs
+  </footer>
+
+  <script>
+    // ── Tab switching ─────────────────────────────────────────────
+    function switchTab(name, el) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+    }
+
+    // ── Slider value display ──────────────────────────────────────
+    function updateVal(id, val) {
+      document.getElementById('val-' + id).textContent = parseFloat(val);
+    }
+
+    // ── Render results ────────────────────────────────────────────
+    function renderResults(containerId, data) {
+      const container = document.getElementById(containerId);
+      container.classList.remove('hidden');
+
+      if (data.error) {
+        container.innerHTML = `<div class="error-msg">${data.error}</div>`;
+        return;
+      }
+
+      const recs = data.recommendations;
+      const inputLabel = data.input_song
+        ? `<span class="input-tag">based on "${data.input_song}"</span>`
+        : `<span class="input-tag">based on your vibe</span>`;
+
+      let html = `
+        <div class="results-header">
+          <h3>Recommendations</h3>
+          ${inputLabel}
+        </div>
+      `;
+
+      recs.forEach(song => {
+        const [name, artist] = song.display_name.split(' — ');
+        const scorePercent = Math.round(song.final_score * 100);
+        html += `
+          <div class="song-card">
+            <div class="song-info">
+              <div class="song-name">${name}</div>
+              <div class="song-meta">${artist} · ${song.album_name} · ★ ${song.track_popularity}</div>
+            </div>
+            <div class="song-score">
+              <div class="score-bar-wrap">
+                <div class="score-bar" style="width: ${scorePercent}%"></div>
+              </div>
+              <div class="score-val">${scorePercent}%</div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // ── Show loader ───────────────────────────────────────────────
+    function showLoader(containerId) {
+      const container = document.getElementById(containerId);
+      container.classList.remove('hidden');
+      container.innerHTML = `<div class="loader"><span></span><span></span><span></span></div>`;
+    }
+
+    // ── Search by name ────────────────────────────────────────────
+    async function searchByName() {
+      const query = document.getElementById('song-input').value.trim();
+      if (!query) return;
+
+      const btn = document.getElementById('btn-name');
+      btn.classList.add('loading');
+      btn.textContent = 'Finding…';
+      showLoader('results-name');
+
+      try {
+        const res = await fetch('/recommend/name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        const data = await res.json();
+        renderResults('results-name', data);
+      } catch (e) {
+        document.getElementById('results-name').innerHTML =
+          `<div class="error-msg">Something went wrong. Please try again.</div>`;
+      } finally {
+        btn.classList.remove('loading');
+        btn.textContent = 'Find';
+      }
+    }
+
+    // ── Search by features ────────────────────────────────────────
+    async function searchByFeatures() {
+      const btn = document.getElementById('btn-features');
+      btn.classList.add('loading');
+      btn.textContent = 'Finding…';
+      showLoader('results-features');
+
+      const features = {
+        danceability:     parseFloat(document.querySelector('[oninput*="danceability"]').value),
+        energy:           parseFloat(document.querySelector('[oninput*="energy"]').value),
+        valence:          parseFloat(document.querySelector('[oninput*="valence"]').value),
+        acousticness:     parseFloat(document.querySelector('[oninput*="acousticness"]').value),
+        speechiness:      parseFloat(document.querySelector('[oninput*="speechiness"]').value),
+        instrumentalness: parseFloat(document.querySelector('[oninput*="instrumentalness"]').value),
+        tempo:            parseFloat(document.querySelector('[oninput*="tempo"]').value),
+        loudness:         parseFloat(document.querySelector('[oninput*="loudness"]').value),
+      };
+
+      try {
+        const res = await fetch('/recommend/features', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(features)
+        });
+        const data = await res.json();
+        renderResults('results-features', data);
+      } catch (e) {
+        document.getElementById('results-features').innerHTML =
+          `<div class="error-msg">Something went wrong. Please try again.</div>`;
+      } finally {
+        btn.classList.remove('loading');
+        btn.textContent = 'Find by Vibe';
+      }
+    }
+
+    // ── Enter key support ─────────────────────────────────────────
+    document.getElementById('song-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') searchByName();
+    });
+  </script>
+
+</body>
+</html>
