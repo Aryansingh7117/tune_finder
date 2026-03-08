@@ -5,7 +5,7 @@ A content-based music recommendation system that suggests similar songs based on
 ---
 
 ## 🚀 Live Demo
-> [link](https://tune-finder.onrender.com)
+> (https://tune-finder.onrender.com)
 
 ---
 
